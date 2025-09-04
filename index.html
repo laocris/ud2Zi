@@ -67,12 +67,38 @@
       flex-direction: column;
       align-items: center;
     }
+    .character-display-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+    }
     #character-target-div {
       border: 1px solid #ccc;
       background-color: white;
-      margin: 20px 0;
+      margin: 20px 0 10px 0;
       width: 150px;
       height: 150px;
+    }
+    .replay-button {
+      padding: 8px 16px;
+      background-color: #FF9800;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin: 0 auto;
+      transition: background-color 0.3s;
+    }
+    .replay-button:hover {
+      background-color: #F57C00;
+    }
+    .replay-button:active {
+      transform: scale(0.95);
     }
     .canvas-container {
       position: relative;
@@ -238,7 +264,12 @@
       #character-target-div {
         width: 120px !important;
         height: 120px !important;
-        margin: 15px 0;
+        margin: 15px 0 10px 0;
+      }
+      
+      .replay-button {
+        font-size: 13px;
+        padding: 6px 12px;
       }
       
       .practice-section {
@@ -298,6 +329,11 @@
         height: 100px !important;
       }
       
+      .replay-button {
+        font-size: 12px;
+        padding: 5px 10px;
+      }
+      
       #character-canvas {
         width: 180px !important;
         height: 180px !important;
@@ -352,6 +388,11 @@
         height: 100px !important;
       }
       
+      .replay-button {
+        font-size: 12px;
+        padding: 5px 10px;
+      }
+      
       #character-canvas {
         width: 180px !important;
         height: 180px !important;
@@ -383,10 +424,15 @@
     <div class="main-content">
       <div id="current-word"></div>
       
-      <div id="character-target-div"></div>
+      <div class="character-display-section">
+        <div id="character-target-div"></div>
+        <button class="replay-button" onclick="replayAnimation()">
+          ↻ Repetir animación
+        </button>
+      </div>
 
       <div class="practice-section">
-        <h3>Practica escribir el carácter</h3>
+        <h3>Practica escribir el caracter</h3>
         <div class="canvas-container">
           <canvas id="character-canvas" width="250" height="250"></canvas>
         </div>
@@ -435,13 +481,13 @@ const characters = [
     let lastX = 0;
     let lastY = 0;
 
-
+    // Canvas setup
     const canvas = document.getElementById('character-canvas');
     const ctx = canvas.getContext('2d');
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
-
+    // Stroke width control
     const strokeWidthInput = document.getElementById('stroke-width');
     const strokeValueDisplay = document.getElementById('stroke-value');
     strokeWidthInput.addEventListener('input', (e) => {
@@ -450,7 +496,7 @@ const characters = [
     });
     ctx.lineWidth = strokeWidthInput.value;
 
-
+    // Drawing functions
     function startDrawing(e) {
       isDrawing = true;
       const rect = canvas.getBoundingClientRect();
@@ -484,13 +530,13 @@ const characters = [
       isDrawing = false;
     }
 
-
+    // Mouse events
     canvas.addEventListener('mousedown', startDrawing);
     canvas.addEventListener('mousemove', draw);
     canvas.addEventListener('mouseup', stopDrawing);
     canvas.addEventListener('mouseout', stopDrawing);
 
-
+    // Touch events for mobile
     canvas.addEventListener('touchstart', (e) => {
       e.preventDefault();
       startDrawing(e);
@@ -534,6 +580,13 @@ const characters = [
       sidebar.classList.toggle('show');
     }
 
+    // Function to replay the character animation
+    function replayAnimation() {
+      if (writer) {
+        writer.animateCharacter();
+      }
+    }
+
     function showCharacter(index) {
       if (index >= characters.length) {
         index = 0;
@@ -543,9 +596,10 @@ const characters = [
       currentIndex = index;
       const item = characters[index];
 
-
+      // Update current word display
       document.getElementById('current-word').textContent = `${item.char} (${item.pinyin}) - ${item.spanish}`;
 
+      // Update HanziWriter display
       const targetDiv = document.getElementById('character-target-div');
       targetDiv.innerHTML = '';
 
@@ -557,13 +611,15 @@ const characters = [
         height: divHeight,
         padding: 10,
         strokeColor: '#000',
+        strokeAnimationSpeed: 1,
+        delayBetweenStrokes: 300,
       });
       writer.animateCharacter();
 
-
+      // Clear and update canvas
       clearCanvas();
 
-
+      // Update active button in sidebar
       const buttons = document.querySelectorAll('.sidebar button');
       buttons.forEach((btn, i) => {
         if (i === index) {
@@ -573,7 +629,7 @@ const characters = [
         }
       });
 
-
+      // Close mobile menu after selection on small screens
       if (window.innerWidth <= 600) {
         const sidebar = document.getElementById('sidebar');
         sidebar.classList.remove('show');
@@ -592,10 +648,11 @@ const characters = [
       });
     }
 
+    // Initialize
     generateMenu();
     showCharacter(currentIndex);
 
-
+    // Navigation buttons
     document.getElementById('prev-button').addEventListener('click', () => {
       showCharacter(currentIndex - 1);
     });
@@ -604,7 +661,7 @@ const characters = [
       showCharacter(currentIndex + 1);
     });
 
-  
+    // Handle window resize
     let resizeTimeout;
     window.addEventListener('resize', () => {
       clearTimeout(resizeTimeout);
